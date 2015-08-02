@@ -1,4 +1,9 @@
-
+Classy.$extend({
+	$$treta: function() {
+		console.log(this.$data());
+		return "treta";
+	}
+});
 
 var user = Classy('user', {
   test: function(el) {

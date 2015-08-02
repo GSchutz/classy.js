@@ -24,6 +24,10 @@
 
   var ai = {};
 
+
+  var extensions = [];
+  var extensions_proto = [];
+
   function Class(name, methods) {
     
     var classed = {};
@@ -226,12 +230,25 @@
         return k ? indexed[k] : indexed;
       };
 
+      // FIXME
+      _.each(extensions, function(ext) {
+        _.assign(this, ext);
+      }, this);
+
+      // FIXME
       if (methods && !methods.prototype)
         _.assign(this, methods);
     }
 
+    // FIXME
+    _.each(extensions_proto, function(ext) {
+      Classy.prototype = ext.prototype;
+    }, this);
+
+    // FIXME
     if (methods && methods.prototype)
       Classy.prototype = methods.prototype;
+
     
     // function $current(c) {
     //   if (c) {
@@ -255,6 +272,16 @@
     
     return eval(name);
   }
+
+  Class.$extend = function(obj) {
+    if (_.isPlainObject(obj)) {
+      extensions.push(obj);
+    } else {
+      extensions_proto.push(obj);
+    }
+
+    return Class;
+  };
   
   exports.Classy = Class;
 
