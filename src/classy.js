@@ -30,8 +30,6 @@
           // $wrapped is just one (or) the first argument,
           // so we pass to the first arguments;
 
-          console.log(chain);
-
           if (chain || !_.isEmpty(prop.prototype)) {
 
             var args = [this];
@@ -45,17 +43,10 @@
           var args = [];
           Array.prototype.push.apply(args, arguments);
 
-          console.log(args);
-
           return prop.apply(this, args);
-        }
-        
-        if (methodName == "only") {
-          console.log(arguments, this, object, source, options);
         }
 
         if (!_.isEmpty(prop.prototype)) {
-          console.log(prop, this, object, arguments);
           //mixin.call(this, mixed, prop.prototype, {chain: false, args: arguments});
 
           return mixed;
