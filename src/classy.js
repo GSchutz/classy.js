@@ -261,9 +261,24 @@
         return _.filter(data, o);
       };
 
+      this.$change = function(a, b) {
+        var k;
+        if (_.isFinite(a))
+          k = a;
+        else
+          k = _.findIndex(data, {id: a.id});
+
+        if (data[k])
+          data[k] = this(b);
+
+        return this;
+      };
+
       this.$set = function(u, key, value) {
         if (_.isArray(key)) {
           // TODO
+        } else if(_.isPlainObject(key)) {
+          this.$change(a, b);
         } else {
           u[key] = value;
           u.$wrapped[key] = u[key];
