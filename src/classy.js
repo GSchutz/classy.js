@@ -142,8 +142,10 @@
       _.assign(this,u);\
       this.$wrapped = u;\
     }');
+
+    var constructor;
     
-    eval('function '+name+'(value){\
+    eval('var '+name+' = constructor = function '+name+'(value){\
       if (value instanceof '+NameWrapper+')\
         return value;\
       return new '+NameWrapper+'(value);\
@@ -226,6 +228,8 @@
       };
 
       this.$add = function(u) {
+        u = constructor(u);
+
         data.push(u);
         indexed[u[index]] = u;
 
