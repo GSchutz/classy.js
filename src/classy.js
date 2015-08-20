@@ -343,6 +343,20 @@
     // methods only for the constructor not his instances
     function ClassyProto() {}
 
+    // unchainable methods
+    function ClassyUnchain() {}
+
+    ClassyUnchain.prototype.$value = function(u) {
+      var n = {};
+
+      _.each(this, function(v, k) {
+        if (_.indexOf(k, '$') !== 0)
+          n[k] = v;
+      }, this);
+
+      return n;
+    };
+
     // FIXME
     if (methods && methods.prototype) {
       Classy.prototype = methods.prototype;
@@ -375,6 +389,8 @@
     // });
 
     eval('mixin('+name+', new Classy(), true);');
+
+    eval('mixin('+name+', new ClassyUnchain(), false);');
 
     // eval('mixin('+name+', '+name+');');
     eval(NameWrapper+'.prototype = '+name+'.prototype;');
