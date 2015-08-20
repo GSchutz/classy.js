@@ -261,8 +261,8 @@
           : (_.isPlainObject(i) ? _.find(data, i) : data);
       };
 
-      this.$filter = function(o) {
-        return _.filter(data, o);
+      this.$filter = function(ff) {
+        return _.filter(data, ff);
       };
 
       this.$change = function(a, b) {
