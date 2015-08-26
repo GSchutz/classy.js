@@ -191,12 +191,16 @@
       };
       
       this.$current = function (c) {
-        if (c) {
+        if (!_.isUndefined(c)) {
           current = c;
           return this;
         } else {
-          return current ? current : _.first(data);
+          return current;
         }
+      };
+
+      this.$first = function() {
+        return _.first(data);
       };
 
       this.$next = function() {
@@ -246,6 +250,15 @@
         return this;
       };
 
+      this.$removeAll = function() {
+        data = [];
+        indexed = {};
+
+        ai[name] = 1;
+
+        return this;
+      };
+
       this.$remove = function(u) {
         delete indexed[u[index]];
         _.pull(data, u);
@@ -263,6 +276,12 @@
 
       this.$filter = function(ff) {
         return _.filter(data, ff);
+      };
+
+      this.$export = function() {
+        return _.filter(data, function(d) {
+          return d.$value();
+        });
       };
 
       this.$change = function(a, b) {
