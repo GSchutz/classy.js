@@ -192,7 +192,7 @@
       
       this.$current = function (c) {
         if (!_.isUndefined(c)) {
-          current = c.id ? this.$data(c.id) : null;
+          current = (c && c.id) ? this.$data(c.id) : null;
           return this;
         } else {
           return current;
