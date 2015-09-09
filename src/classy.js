@@ -17,49 +17,56 @@
       // this will set the methods to the global stats
       object[methodName] = prop;
 
-      // this will set the methods to the wrapped object.
-      // But now, we already have a collection defined, 
-      // so we just pass it to the original function;
-      // object.prototype[methodName] = prop;
-      object.prototype[methodName] = (function(prop, options){
+      if (_.isFunction(prop)) {
+        // this will set the methods to the wrapped object.
+        // But now, we already have a collection defined, 
+        // so we just pass it to the original function;
+        // object.prototype[methodName] = prop;
+        object.prototype[methodName] = (function(prop, options){
 
-        function mixed() {
-          //if (_.isEmpty(arguments))
-            //arguments = options.args;
+          function mixed() {
+            //if (_.isEmpty(arguments))
+              //arguments = options.args;
 
-          // $wrapped is just one (or) the first argument,
-          // so we pass to the first arguments;
+            // $wrapped is just one (or) the first argument,
+            // so we pass to the first arguments;
 
-          if (chain || !_.isEmpty(prop.prototype)) {
+            if (chain || !_.isEmpty(prop.prototype)) {
 
-            var args = [this];
+              var args = [this];
+              Array.prototype.push.apply(args, arguments);
+
+              // in this mixin we just execute the method, and mantain the wrapped
+              prop.apply(this, args);
+
+              // this.$wrapped = prop.apply(this, args);
+
+              return this;
+            }
+
+            var args = [];
             Array.prototype.push.apply(args, arguments);
 
-            this.$wrapped = prop.apply(this, args);
-
-            return this;
+            return prop.apply(this, args);
           }
 
-          var args = [];
-          Array.prototype.push.apply(args, arguments);
+          if (!_.isEmpty(prop.prototype)) {
+            //mixin.call(this, mixed, prop.prototype, {chain: false, args: arguments});
 
-          return prop.apply(this, args);
-        }
-
-        if (!_.isEmpty(prop.prototype)) {
-          //mixin.call(this, mixed, prop.prototype, {chain: false, args: arguments});
+            return mixed;
+          } else {
+            return mixed;
+          }
 
           return mixed;
-        } else {
-          return mixed;
-        }
 
-        return mixed;
+          //F.prototype = prop.prototype;
 
-        //F.prototype = prop.prototype;
-
-      }.call(object, prop, options));
-
+        }.call(object, prop, options));
+      } else {
+        // only mix functions
+        // console.log('do nothing?', methodName);
+      }
     }
 
     return object;
@@ -164,7 +171,7 @@
       if (listeners[listener]) {
         _.each(listeners[listener], function(callback) {
           callback.apply(this, args);
-        });
+        }, this);
       }
 
       return;
@@ -255,6 +262,25 @@
         indexed = {};
 
         ai[name] = 1;
+        current = null;
+
+        dispatch.call(this, '$removeAll');
+
+        return this;
+      };
+
+      this.$removeAt = function(at, n) {
+        var rem = data.splice(at, n || 1);
+
+        _.each(rem, function(k) {
+          if (_.isEqual(current, k))
+            current = null;
+          delete indexed[k[index]];
+        });
+
+        delete rem;
+
+        dispatch.call(this, '$removeAt', at, n);
 
         return this;
       };
@@ -262,6 +288,9 @@
       this.$remove = function(u) {
         delete indexed[u[index]];
         _.pull(data, u);
+
+        if (_.isEqual(current, u))
+          current = null;
 
         dispatch.call(this, '$remove', u);
 
