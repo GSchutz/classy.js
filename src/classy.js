@@ -129,13 +129,16 @@
 
     var defaults = methods.$defaults || {};
 
-    if (methods.$hasMany) {
-      _.each(methods.$hasMany, function(r, k) {
-        defaults[k] = r.$constructor();
-      });
+    function hasMany() {
+      if (methods.$hasMany) {
+        _.each(methods.$hasMany, function(r, k) {
+          defaults[k] = r.$constructor();
+        });
+      }
     }
     
     eval('function '+Name+'(o){\
+      hasMany();\
       var defs = _.defaults(_.cloneDeep(defaults), {\
         id: ai[name]\
       });\
@@ -208,6 +211,10 @@
 
       this.$first = function() {
         return _.first(data);
+      };
+
+      this.$last = function() {
+        return _.last(data);
       };
 
       this.$next = function() {
@@ -307,6 +314,10 @@
         return _.filter(data, ff);
       };
 
+      this.$find = function(ff) {
+        return _.find(data, ff);
+      };
+
       this.$export = function() {
         return _.filter(data, function(d) {
           return d.$value();
@@ -404,6 +415,10 @@
 
       return n;
     };
+
+    if (methods && methods.$unchain) {
+      mixin(ClassyUnchain, methods.$unchain, false);
+    }
 
     // FIXME
     if (methods && methods.prototype) {
