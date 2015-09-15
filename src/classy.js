@@ -1,12 +1,16 @@
 (function(exports) {
 
   function mixin(object, source, options) {
-    var chain = true;
+    var chain = true,
+      supe = false;
     
     if (options === false) {
       chain = false;
-    } else if (_.isObject(options) && 'chain' in options) {
-      chain = options.chain;
+    } else if (_.isObject(options)) {
+      if ('chain' in options)
+        chain = options.chain;
+      if ('super' in options)
+        supe = true;
     }
 
     //options = options || {};
@@ -14,55 +18,99 @@
     // set each method (in source) for object
     for(methodName in source) {
       prop = source[methodName];
+
       // this will set the methods to the global stats
-      object[methodName] = prop;
+      if (supe && object[methodName]) {
+
+        (function() {
+          this.$super = prop;
+
+          this[methodName] = this[methodName].bind(this);
+          
+        }.call(object));
+      } else {
+        object[methodName] = prop;
+      }
 
       if (_.isFunction(prop)) {
         // this will set the methods to the wrapped object.
         // But now, we already have a collection defined, 
         // so we just pass it to the original function;
         // object.prototype[methodName] = prop;
-        object.prototype[methodName] = (function(prop, options){
 
-          function mixed() {
-            //if (_.isEmpty(arguments))
-              //arguments = options.args;
+        if (supe && _.isFunction(object.prototype[methodName])) {
 
-            // $wrapped is just one (or) the first argument,
-            // so we pass to the first arguments;
+          (function() {
+            this.$super = prop;
 
-            if (chain || !_.isEmpty(prop.prototype)) {
+            this[methodName] = this[methodName].bind(this);
+            
+          }.call(object));
 
-              var args = [this];
+          var temp = (function() {
+            var fn = object[methodName];
+            return function() {
+              return fn.apply(object, arguments);
+            };
+          }.call(object));
+
+
+          object.prototype[methodName] = (function(prop, options) {
+
+            function mixed() {
+
+              // $wrapped is just one (or) the first argument,
+              // so we pass to the first arguments;
+
+              if (chain || !_.isEmpty(temp.prototype)) {
+
+                var args = [this];
+                Array.prototype.push.apply(args, arguments);
+
+                // in this mixin we just execute the method, and mantain the wrapped
+                temp.apply(this, args);
+
+                return this;
+              }
+
+              var args = [];
               Array.prototype.push.apply(args, arguments);
 
-              // in this mixin we just execute the method, and mantain the wrapped
-              prop.apply(this, args);
-
-              // this.$wrapped = prop.apply(this, args);
-
-              return this;
+              return temp.apply(this, args);
             }
 
-            var args = [];
-            Array.prototype.push.apply(args, arguments);
+            return mixed;
+          }.call(object, prop, options));
+          
+        } else {
 
-            return prop.apply(this, args);
-          }
+          object.prototype[methodName] = (function(prop, options) {
 
-          if (!_.isEmpty(prop.prototype)) {
-            //mixin.call(this, mixed, prop.prototype, {chain: false, args: arguments});
+            function mixed() {
+
+              // $wrapped is just one (or) the first argument,
+              // so we pass to the first arguments;
+
+              if (chain || !_.isEmpty(prop.prototype)) {
+
+                var args = [this];
+                Array.prototype.push.apply(args, arguments);
+
+                // in this mixin we just execute the method, and mantain the wrapped
+                prop.apply(this, args);
+
+                return this;
+              }
+
+              var args = [];
+              Array.prototype.push.apply(args, arguments);
+
+              return prop.apply(this, args);
+            }
 
             return mixed;
-          } else {
-            return mixed;
-          }
-
-          return mixed;
-
-          //F.prototype = prop.prototype;
-
-        }.call(object, prop, options));
+          }.call(object, prop, options));
+        }
       } else {
         // only mix functions
         // console.log('do nothing?', methodName);
@@ -431,10 +479,10 @@
     }
 
     if (inherits)
-      eval('mixin('+name+', inherits, true);');
+      eval('mixin('+name+', inherits, {chain: true, super: true});');
 
     function $extend(_o) {
-      eval('mixin('+name+', _o, true);');
+      eval('mixin('+name+', _o, {chain: true, super: true});');
       return this;
     }
     eval(''+name+'.$extend = $extend;');
@@ -456,7 +504,7 @@
     //   eval(''+name+'.'+k+' = d;');
     // });
 
-    eval('mixin('+name+', new Classy(), true);');
+    eval('mixin('+name+', new Classy(), {chain: true, super: true});');
 
     eval('mixin('+name+', new ClassyUnchain(), false);');
 

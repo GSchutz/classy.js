@@ -1,13 +1,12 @@
-function Massy() {
-  this.$$treta = function() {
-    console.log(this);
-    return "treta";
+function SuperClass() {
+  this.$add = function(u) {
+    console.log('do something');
+
+    this.$super(u);
+
+    return this;
   };
 }
-
-Massy.prototype.$$super = function() {
-  console.log('Suppper');
-};
 
 // Classy.$extend(new Massy(), {chain: false});
 
@@ -24,7 +23,7 @@ var user = Classy('user', {
     console.log(el);
     return this;
   }
-}, Massy());
+}, new SuperClass());
 
 window.user = user;
 
