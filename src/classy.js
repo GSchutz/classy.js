@@ -257,6 +257,8 @@
       };
 
       this.$load = function(data) {
+        this.$removeAll();
+
         _.each(data, function(d) {
           this(d).$add();
         }, this);
@@ -265,7 +267,10 @@
       };
 
       this.$removeAll = function() {
-        data = [];
+        data.length = 0;
+        // WARNING
+        // to not remove the assigment, use the code above
+        // for (var j in indexed) delete indexed[j];
         indexed = {};
 
         ai[name] = 1;
