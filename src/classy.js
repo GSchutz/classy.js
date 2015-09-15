@@ -202,7 +202,7 @@
       
       this.$current = function (c) {
         if (!_.isUndefined(c)) {
-          current = (c && c.id) ? this.$data(c.id) : null;
+          current = (c && c.id) ? this.$data(c) : null;
           return this;
         } else {
           return current;
@@ -307,7 +307,7 @@
       this.$data = function(i) {
         return _.isFinite(i) 
           ? data[i] 
-          : (_.isPlainObject(i) ? _.find(data, i) : data);
+          : (_.isObject(i) ? _.find(data, i) : data);
       };
 
       this.$filter = function(ff) {

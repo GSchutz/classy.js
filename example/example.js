@@ -24,12 +24,12 @@ var user = Classy('user', {
     console.log(el);
     return this;
   }
-}, new Massy());
+}, Massy());
 
 window.user = user;
 
 var guilherme = user({name: 'guilherme'}).$add();
-var joao = user({name: 'joao'});
+var joao = user({name: 'joao'}).$add();
 // console.log(user.$add(guilherme));
 
 guilherme.$set('name', "Guilherme A");
