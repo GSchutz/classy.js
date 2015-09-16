@@ -159,7 +159,8 @@
 
   function Class(name, methods, inherits) {
     
-    var classed = {};
+    var classed = {},
+      original_name = name;
 
     methods = methods || {};
 
@@ -181,12 +182,14 @@
       if (methods.$hasMany) {
         _.each(methods.$hasMany, function(r, k) {
           defaults[k] = r.$constructor();
-        });
+
+          defaults[k].$belongsTo[original_name] = this;
+        }, this);
       }
     }
     
     eval('function '+Name+'(o){\
-      hasMany();\
+      hasMany.call(this);\
       var defs = _.defaults(_.cloneDeep(defaults), {\
         id: ai[name]\
       });\
@@ -234,6 +237,8 @@
       var data = [];
       var indexed = {};
       var index = methods.$index || 'id';
+
+      this.$belongsTo = {};
 
       this.$on = function(listener, callback) {
         listeners[listener] = listeners[listener] || [];

@@ -1,12 +1,15 @@
 {
   "name": "classy.js",
   "version": "0.0.0",
+  "main": [
+    "src/classy.js"
+  ],
   "homepage": "https://github.com/GSchutz/classy.js",
   "authors": [
     "Guilherme Schutz <guilherme@gschutz.com>"
   ],
   "license": "MIT",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
