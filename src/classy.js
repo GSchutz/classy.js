@@ -178,10 +178,17 @@
     ai[name] = 1;
 
     var defaults = methods.$defaults || {};
+    // var defaultsMethods = {};
+
+    // _.eachRight(defaults, function(d, k) {
+    //   if (_.isFunction(d)) {
+    //     defaultsMethods[k] = d;
+    //     delete defaults[k];
+    //   }
+    // });
 
     function hasMany() {
       if (methods.$hasMany) {
-        console.log(methods.$hasMany);
         _.each(methods.$hasMany, function(r, k) {
           defaults[k] = r.$constructor();
 
@@ -189,6 +196,11 @@
         }, this);
       }
     }
+
+    
+      // _.each(defaultsMethods, function(d, k) {\
+      //   defs[k] = d.call(this, defs);\
+      // }, this);\
     
     eval('function '+Name+'(o){\
       hasMany.call(this);\
