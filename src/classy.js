@@ -114,6 +114,7 @@
       } else {
         // only mix functions
         // console.log('do nothing?', methodName);
+        // object[methodName] = prop;
       }
     }
 
@@ -180,6 +181,7 @@
 
     function hasMany() {
       if (methods.$hasMany) {
+        console.log(methods.$hasMany);
         _.each(methods.$hasMany, function(r, k) {
           defaults[k] = r.$constructor();
 
@@ -191,7 +193,8 @@
     eval('function '+Name+'(o){\
       hasMany.call(this);\
       var defs = _.defaults(_.cloneDeep(defaults), {\
-        id: ai[name]\
+        id: ai[name],\
+        $loading: false\
       });\
       o = _.defaults(o || {}, defs);\
       _.assign(this,o);\
@@ -240,6 +243,8 @@
 
       this.$belongsTo = {};
 
+      this.$loading = false;
+
       this.$on = function(listener, callback) {
         listeners[listener] = listeners[listener] || [];
 
@@ -250,7 +255,7 @@
       };
 
       this.$constructor = function() {
-        return Class(name, methods);
+        return Class(name, methods, inherits);
       };
       
       this.$current = function (c) {
