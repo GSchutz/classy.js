@@ -158,7 +158,7 @@
   var extensions = [];
   var extensions_proto = [];
 
-  function Class(name, methods, inherits) {
+  function Class(name, methods, inherits, listeners) {
     
     var classed = {},
       original_name = name;
@@ -197,7 +197,7 @@
       }
     }
 
-    
+
       // _.each(defaultsMethods, function(d, k) {\
       //   defs[k] = d.call(this, defs);\
       // }, this);\
@@ -232,7 +232,7 @@
     // eval(name+'.$current = $current.bind('+name+');');
     // eval(name+'.$add = $add.bind('+name+');');
 
-    var listeners = {};
+    listeners = listeners || {};
 
     function dispatch(listener) {
       var args = Array.prototype.slice.call(arguments, 1);
@@ -267,7 +267,7 @@
       };
 
       this.$constructor = function() {
-        return Class(name, methods, inherits);
+        return Class(name, methods, inherits, listeners);
       };
       
       this.$current = function (c) {
@@ -409,18 +409,25 @@
         if (data[k])
           data[k] = this(b);
 
+        dispatch.call(this, '$change', a, b);
+
         return this;
       };
 
       this.$set = function(u, key, value) {
+        var oldValue;
         if (_.isArray(key)) {
           // TODO
         } else if(_.isPlainObject(key)) {
           this.$change(a, b);
         } else {
+          oldValue = _.cloneDeep(u[key]);
+
           u[key] = value;
           u.$wrapped[key] = u[key];
         }
+
+        dispatch.call(this, '$set', u, key, value, oldValue);
 
         return this;
       };
