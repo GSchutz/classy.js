@@ -28,10 +28,15 @@ var user = Classy('user', {
 window.user = user;
 
 var guilherme = user({name: 'guilherme'}).$add();
+
 var joao = user({name: 'joao'}).$add();
 // console.log(user.$add(guilherme));
 
 guilherme.$set('name', "Guilherme A");
+
+
+var jorge = guilherme.$copy();
+
 
 console.log(guilherme);
 // console.log(user.$add(joao).$data());

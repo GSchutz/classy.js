@@ -498,6 +498,14 @@
       return n;
     };
 
+    ClassyUnchain.prototype.$isActive = function() {
+      return (this === this.constructor.$current());
+    };
+
+    ClassyUnchain.prototype.$copy = function() {
+      return this.constructor(this.$value());
+    };
+
     if (methods && methods.$unchain) {
       mixin(ClassyUnchain, methods.$unchain, false);
     }
