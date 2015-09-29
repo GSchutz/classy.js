@@ -192,9 +192,16 @@
         _.each(methods.$hasMany, function(r, k) {
           defaults[k] = r.$constructor();
 
-          defaults[k].$belongsTo[original_name] = this;
+          if (!defaults[k].$belongsTo[original_name])
+            defaults[k].$belongsTo[original_name] = this;
         }, this);
       }
+
+      // if (methods.$belongsTo) {
+      //   _.each(methods.$hasMany, function(r, k) {
+      //     defaults[k] = r.$constructor();
+      //   }, this);
+      // }
     }
 
 
