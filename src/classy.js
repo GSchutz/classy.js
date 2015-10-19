@@ -119,41 +119,9 @@
     }
 
     return object;
-  }
-  
-  function mixin2(object, source, chain) {
-    chain = !chain;
-
-    for(var methodName in source) {
-      if (_.isFunction(source[methodName])) {
-        object.prototype[methodName] = function(method, methodName) {
-          function mixed() {
-            if (chain) {
-              var args = [this];
-              Array.prototype.push.apply(args, arguments);
-               
-              method.apply(this, args);
-              
-              // return the current class when mixed
-              return this;
-            } 
-
-            var args = [];
-            Array.prototype.push.apply(args, arguments);
-
-            return prop.apply(this, args);
-          }
-          return mixed;
-        }.call(source, source[methodName], methodName);
-      } else {
-        object.prototype[methodName] = source[methodName];
-      }
-    }
-    return object;
-  }
+  }  
 
   var ai = {};
-
 
   var extensions = [];
   var extensions_proto = [];
@@ -511,6 +479,36 @@
 
     ClassyUnchain.prototype.$copy = function() {
       return this.constructor(this.$value());
+    };
+
+    ClassyUnchain.prototype.$next = function() {
+      var data = [], k;
+      if (this.constructor && this.constructor.$data) {
+        data = this.constructor.$data();
+
+        k = _.indexOf(data, this);
+      } else {
+        data = this.$data();
+
+        k = _.indexOf(data, this.$current());
+      }
+
+      return (k > -1) ? (data[k+1] ? data[k+1] : false) : false;
+    };
+
+    ClassyUnchain.prototype.$prev = function() {
+      var data = [], k;
+      if (this.constructor && this.constructor.$data) {
+        data = this.constructor.$data();
+
+        k = _.indexOf(data, this);
+      } else {
+        data = this.$data();
+
+        k = _.indexOf(data, this.$current());
+      }
+
+      return (k > -1) ? (data[k-1] ? data[k-1] : false) : false;
     };
 
     if (methods && methods.$unchain) {
