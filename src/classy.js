@@ -146,6 +146,9 @@
     ai[name] = 1;
 
     var defaults = methods.$defaults || {};
+
+    // add unique checkers for properties
+    var unique = methods.$unique;
     // var defaultsMethods = {};
 
     // _.eachRight(defaults, function(d, k) {
@@ -227,10 +230,40 @@
       var data = [];
       var indexed = {};
       var index = methods.$index || 'id';
+      var that = this;
 
       this.$belongsTo = {};
 
       this.$loading = false;
+
+
+      function alreadyExist(newData) {
+        var test = false;
+
+        _.each(data, function(d) {
+          _.each(unique, function(u, k) {
+            if (_.isFunction(unique[k])) {
+              test = unique[k].call(that, d[k], newData[k], d, newData);
+            }
+            //  else if (unique[k] instanceof RegExp) {
+            //   test = unique[k].test(newData[k])
+            // }
+
+            if (test)
+              return true;
+          });
+          if (test)
+            return true;
+        });
+
+        return test;
+      }
+
+      this.$dispatch = function(listener) {
+        dispatch.apply(this, arguments);
+
+        return this;
+      };
 
       this.$on = function(listener, callback) {
         listeners[listener] = listeners[listener] || [];
@@ -291,6 +324,9 @@
       };
 
       this.$add = function(u) {
+        if (alreadyExist(u))
+          throw new Error('Unique constraint failed');
+
         u = constructor(u);
 
         data.push(u);
