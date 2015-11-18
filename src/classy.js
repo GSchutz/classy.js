@@ -133,9 +133,7 @@
 
     methods = methods || {};
 
-    // methods = _.defaults(methods, {
-    //   $pk: 'id'
-    // });
+    var $pk = methods.$pk || 'id';
     
     // prevent injection on eval
     name = name.toLowerCase().replace(/[^a-z0-1_A-Z]/g, '');
@@ -186,6 +184,7 @@
         id: ai[name],\
         $loading: false\
       });\
+      defs[$pk] = defs.id;\
       o = _.defaults(o || {}, defs);\
       _.assign(this,o);\
       ai[name] += 1;\
@@ -266,10 +265,16 @@
       };
 
       this.$on = function(listener, callback) {
-        listeners[listener] = listeners[listener] || [];
+        if (!_.isArray(listener)) {
+          listener = [listener];
+        }
 
-        if (_.isFunction(callback))
-          listeners[listener].push(callback);
+        _.each(listener, function(ltn) {
+          listeners[ltn] = listeners[ltn] || [];
+
+          if (_.isFunction(callback))
+            listeners[ltn].push(callback);
+        });
 
         return this;
       };
