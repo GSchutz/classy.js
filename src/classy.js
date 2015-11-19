@@ -133,7 +133,17 @@
 
     methods = methods || {};
 
+    _.defaults(methods, {
+      $hasMany: {}
+    });
+
     var $pk = methods.$pk || 'id';
+
+    $pko = function(v) {
+      var k = {};
+      k[$pk] = v;
+      return k;
+    }
     
     // prevent injection on eval
     name = name.toLowerCase().replace(/[^a-z0-1_A-Z]/g, '');
@@ -228,7 +238,7 @@
       var current = null;
       var data = [];
       var indexed = {};
-      var index = methods.$index || 'id';
+      var index = methods.$index || $pk;
       var that = this;
 
       this.$belongsTo = {};
@@ -285,7 +295,7 @@
       
       this.$current = function (c) {
         if (!_.isUndefined(c)) {
-          current = (c && c.id) ? this.$data(c) : null;
+          current = (c && c[$pk]) ? this.$data(c) : null;
           return this;
         } else {
           return current;
@@ -328,7 +338,16 @@
         return this;
       };
 
-      this.$add = function(u) {
+      function applyHasMany(elem) {
+        _.each(methods.$hasMany, function(m, k) {
+          var nm = m.$constructor();
+
+          nm.$load(elem[k]);
+          elem[k] = nm;
+        });
+      }
+
+      this.$add = function(u, silent) {
         if (alreadyExist(u))
           throw new Error('Unique constraint failed');
 
@@ -337,7 +356,10 @@
         data.push(u);
         indexed[u[index]] = u;
 
-        dispatch.call(this, '$add', u);
+        applyHasMany(u);
+
+        if (!silent)
+          dispatch.call(this, '$add', u);
 
         return this;
       };
@@ -346,7 +368,7 @@
         this.$removeAll();
 
         _.each(data, function(d) {
-          this(d).$add();
+          this(d).$add(true);
         }, this);
 
         return this;
@@ -417,13 +439,22 @@
 
       this.$change = function(a, b) {
         var k;
-        if (_.isFinite(a))
-          k = a;
-        else
-          k = _.findIndex(data, {id: a.id});
+        // if (_.isFinite(a))
+        //   k = a;
+        // else
+        //   k = _.find(data, a);
 
-        if (data[k])
-          data[k] = this(b);
+        // if (_.isFinite(k))
+        //   data[k] = constructor(b);
+        // else
+        //   k = constructor(b);
+
+        _.each(b, function(c, k) {
+          if (!methods.$hasMany[k]) {
+            a[k] = c;
+            a.$wrapped[k] = c;
+          }
+        });
 
         dispatch.call(this, '$change', a, b);
 
@@ -520,6 +551,10 @@
 
     ClassyUnchain.prototype.$copy = function() {
       return this.constructor(this.$value());
+    };
+
+    ClassyUnchain.prototype.$id = function() {
+      return this[this.constructor.$pk];
     };
 
     ClassyUnchain.prototype.$next = function() {
