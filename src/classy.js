@@ -367,6 +367,9 @@
       this.$load = function(data) {
         this.$removeAll();
 
+        if (data && data.$data)
+          data = data.$data();
+
         _.each(data, function(d) {
           this(d).$add(true);
         }, this);
@@ -432,7 +435,7 @@
       };
 
       this.$export = function() {
-        return _.filter(data, function(d) {
+        return _.map(data, function(d) {
           return d.$value();
         });
       };
