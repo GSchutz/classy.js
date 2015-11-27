@@ -1,8 +1,11 @@
 function SuperClass() {
   this.$add = function(u) {
-    console.log('do something');
+    
 
-    this.$super(u);
+    if (u.coco)
+    	this.$super(u);
+    else
+    	throw new TypeError('Property coco is required for class User');
 
     return this;
   };
@@ -27,18 +30,30 @@ var user = Classy('user', {
 
 window.user = user;
 
-var guilherme = user({name: 'guilherme'}).$add();
+try {
 
-var joao = user({name: 'joao'}).$add();
-// console.log(user.$add(guilherme));
+	var joao = user({coco: 'joao'}).$add();
+	
+	var guilherme = user({name: 'guilherme'}).$add();
 
-guilherme.$set('name', "Guilherme A");
+	console.log(user.$add(joao.$copy()));
+
+	// console.log(user.$add(guilherme));
+
+	guilherme.$set('name', "Guilherme A");
 
 
-var jorge = guilherme.$copy();
+	var jorge = guilherme.$copy();
 
 
-console.log(guilherme);
+	console.log(guilherme);
+
+} catch (e) {
+	console.log(e, user.$data());
+}
+
+
+
 // console.log(user.$add(joao).$data());
 
 

@@ -166,10 +166,15 @@
     //   }
     // });
 
-    function hasMany() {
+    function hasMany(o) {
       if (methods.$hasMany) {
         _.each(methods.$hasMany, function(r, k) {
           defaults[k] = r.$constructor();
+
+          if (o && o[k] && !o[k].$data) {
+            defaults[k].$load(o[k]);
+            o[k] = defaults[k];
+          }
 
           if (!defaults[k].$belongsTo[original_name])
             defaults[k].$belongsTo[original_name] = this;
@@ -187,9 +192,20 @@
       // _.each(defaultsMethods, function(d, k) {\
       //   defs[k] = d.call(this, defs);\
       // }, this);\
+
+    // function Classy(o) {
+    //   hasMany.call(this, o);
+
+    //   var defs = _.defaults(_.cloneDeep(defaults), {
+    //     id: ai[name],
+    //     $loading: false
+    //   });
+
+    //   defs[$pk] = defs.id;
+    // }
     
     eval('function '+Name+'(o){\
-      hasMany.call(this);\
+      hasMany.call(this, o);\
       var defs = _.defaults(_.cloneDeep(defaults), {\
         id: ai[name],\
         $loading: false\
@@ -543,6 +559,11 @@
       _.each(this, function(v, k) {
         if (_.indexOf(k, '$') !== 0)
           n[k] = v;
+
+        if (methods.$hasMany[k]) {
+          n[k] = v.$export ? v.$export() : [];
+        }
+
       }, this);
 
       return n;
@@ -553,7 +574,11 @@
     };
 
     ClassyUnchain.prototype.$copy = function() {
-      return this.constructor(this.$value());
+      var v = this.$value();
+
+      delete v.id;
+
+      return this.constructor(v);
     };
 
     ClassyUnchain.prototype.$id = function() {
