@@ -390,6 +390,8 @@
           this(d).$add(true);
         }, this);
 
+        dispatch.call(this, '$load', data);
+
         return this;
       };
 
