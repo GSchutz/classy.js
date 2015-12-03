@@ -261,6 +261,8 @@
 
       this.$loading = false;
 
+      this.$pk = $pk;
+
 
       function alreadyExist(newData) {
         var test = false;
