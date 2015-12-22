@@ -589,6 +589,14 @@
       return this[this.constructor.$pk];
     };
 
+    ClassyUnchain.prototype.$index = function() {
+      return _.indexOf(this.constructor.$data(), this);
+    };
+
+    ClassyUnchain.prototype.$order = function() {
+      return this.$index() + 1;
+    };
+
     ClassyUnchain.prototype.$next = function() {
       var data = [], k;
       if (this.constructor && this.constructor.$data) {
