@@ -1,94 +1,51 @@
-function SuperClass() {
-  this.$add = function(u) {
-    
+var User = Classy('user', {});
 
-    if (u.coco)
-    	this.$super(u);
-    else
-    	throw new TypeError('Property coco is required for class User');
+console.log(User.$data());
 
-    return this;
-  };
-}
+var lola = User({name: "lola"});
 
-// Classy.$extend(new Massy(), {chain: false});
+console.log(lola.$add());
+
+var kate = User({name: "kate"}).$add();
+var rose = User({name: "rose"}).$add();
+
+console.log(lola.$current());
+
+console.log(lola.$next());
 
 
-// Classy.$extend({
-// 	$$treta: function() {
-// 		console.log("treta");
-// 		return "treta";
-// 	}
-// });
+// 1) SuperClass
+// example of a super class that can control/rewrite original methods
+// function SuperClass() {
+//   this.$add = function(u) {
+//     if (u.name) {
+//       // use the $super method to execute the original method
+//     	this.$super(u);
+//     } else {
+//     	throw new TypeError('Property name is required for class User');
+//     }
 
-var user = Classy('user', {
-  test: function(el) {
-    console.log(el);
-    return this;
-  }
-}, new SuperClass());
+//     return this;
+//   };
+// }
 
-window.user = user;
+// var user = Classy('user', {
+//   test: function(el) {
+//     console.log(el);
+//     return this;
+//   }
+// }, new SuperClass());
 
-try {
+// window.user = user;
 
-	var joao = user({coco: 'joao'}).$add();
+// try {
+// 	var joao = user({name: 'joao'}).$add();
 	
-	var guilherme = user({name: 'guilherme'}).$add();
+//   // user guilherme will not be added to $data
+// 	var guilherme = user({tr: 'guilherme'}).$add();
 
-	console.log(user.$add(joao.$copy()));
+// } catch (e) {
+// 	console.log(e);
+// }
 
-	// console.log(user.$add(guilherme));
-
-	guilherme.$set('name', "Guilherme A");
-
-
-	var jorge = guilherme.$copy();
-
-
-	console.log(guilherme);
-
-} catch (e) {
-	console.log(e, user.$data());
-}
-
-
-
-// console.log(user.$add(joao).$data());
-
-
-// var car = Classy('car');
-
-// var mondeo = car({name: 'mondeo'});
-
-// console.log(mondeo.$add());
-// console.log(car.$data());
-
-// var Address = Classy('address', {
-//   treta: function() {
-//     console.log("treta");
-//   }
-// });
-
-// // how to add pre-existed constructors
-// var User = Classy('user', {
-//   $hasMany: {
-//     address: Address
-//   }
-// });
-
-
-// var ruax = Address({name: "Rua X"}).$add();
-// var ruaz = Address({name: "Rua Z"}).$add();
-
-// ruax.treta();
-
-// var jorge = User({name: "Jorge"}).$add();
-
-// console.log(Address.$data());
-// var ruax2 = jorge.address({name: "Rua X"}).$add();
-// console.log(ruax2);
-// ruax2.treta();
-
-// console.log(jorge.address.$data());
-
+// Rewrite Classy
