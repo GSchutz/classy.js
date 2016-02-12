@@ -1,0 +1,31 @@
+{
+  "name": "classy.js",
+  "version": "0.1.0",
+  "description": "A general purpose class constructor for javascript",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Guilherme Schutz",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GSchutz/classy.js"
+  },
+  "bugs": {
+    "url": "https://github.com/GSchutz/classy.js/issues"
+  },
+  "homepage": "https://github.com/GSchutz/classy.js",
+  "devDependencies": {
+    "babel-polyfill": "^6.5.0",
+    "gulp": "^3.9.1",
+    "gulp-jasmine-browser": "^1.0.0",
+    "gulp-util": "^3.0.7"
+  },
+  "dependencies": {
+    "q": "^1.4.1"
+  }
+}
