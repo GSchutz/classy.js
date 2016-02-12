@@ -1,15 +1,32 @@
-var User = Classy('user', {});
+function SuperClass() {
 
-console.log(User.$data());
+  this.go = function() {
+    console.log(this == User);
+    return this;
+  };
 
-var lola = User({name: "lola"});
+  this.$add = function() {
+    // super is a self destructive method
+    console.log('using $super method');
+    return this.$super();
+  };
+}
+
+var User = Classy('user', {
+  $defaults: {
+    name: "",
+    treta: "hight"
+  }
+}, new SuperClass());
+
+var lola = User({name: "lola", treta:"low"});
 
 console.log(lola.$add());
 
 var kate = User({name: "kate"}).$add();
 var rose = User({name: "rose"}).$add();
 
-console.log(lola.$current());
+console.log(rose);
 
 console.log(lola.$next());
 

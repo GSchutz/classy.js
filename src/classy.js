@@ -4,6 +4,7 @@
   function mixin(object, source, options) {
     var chain = true,
       supe = false,
+      prototyped = true,
       unchainMethods = [];
     
     if (options === false) {
@@ -12,27 +13,20 @@
       if ('chain' in options)
         chain = options.chain;
       if ('super' in options)
-        supe = true;
+        supe = options.super;
+      if ('prototyped' in options)
+        prototyped = options.prototyped;
       unchainMethods = options.unchain || unchainMethods;
     }
-    //options = options || {};
+
+    var pseudoObject = object;
+
+    if (prototyped)
+      pseudoObject = object.prototype
 
     // set each method (in source) for object
     for(var methodName in source) {
       var prop = source[methodName];
-
-      // this will set the methods to the global stats
-      if (supe && object[methodName]) {
-
-        (function() {
-          this.$super = prop;
-
-          this[methodName] = this[methodName].bind(this);
-          
-        }.call(object));
-      } else {
-        object[methodName] = prop;
-      }
 
       if (_.isFunction(prop)) {
         // this will set the methods to the wrapped object.
@@ -40,37 +34,32 @@
         // so we just pass it to the original function;
         // object.prototype[methodName] = prop;
 
-        if (supe && _.isFunction(object.prototype[methodName])) {
+        if (supe && _.isFunction(object[methodName])) {
+          // we save the original method object[methodName]
+          var originalMethod = object[methodName];
 
-          (function() {
-            this.$super = prop;
-
-            this[methodName] = this[methodName].bind(this);
-            
-          }.call(object));
-
-          var temp = (function() {
-            var fn = object[methodName];
-            return function() {
-              return fn.apply(object, arguments);
-            };
-          }.call(object));
-
-
-          object.prototype[methodName] = (function(prop, options, methodName) {
+          pseudoObject[methodName] = (function(prop, options, methodName) {
 
             function mixed() {
 
               // $wrapped is just one (or) the first argument,
               // so we pass to the first arguments;
 
-              if (chain || !_.isEmpty(temp.prototype)) {
+              if (chain || !_.isEmpty(prop.prototype)) {
 
                 var args = [this];
                 Array.prototype.push.apply(args, arguments);
 
+                // super is a self destructive method, after dispatch we remove
+                // this prevent from accessing the method outside
+                this.$super = function() {
+                  var val = originalMethod.apply(this, args);
+                  delete this.$super;
+                  return val;
+                };
+
                 // in this mixin we just execute the method, and mantain the wrapped
-                var res = temp.apply(this, args);
+                var res = prop.apply(this, args);
 
                 return _.contains(unchainMethods, methodName) ? res : this;
               }
@@ -78,7 +67,13 @@
               var args = [];
               Array.prototype.push.apply(args, arguments);
 
-              return temp.apply(this, args);
+              this.$super = function() {
+                var val = originalMethod.apply(this, args);
+                delete this.$super;
+                return val;
+              };
+
+              return prop.apply(this, args);
             }
 
             return mixed;
@@ -86,13 +81,12 @@
           
         } else {
 
-          object.prototype[methodName] = (function(prop, options, methodName) {
+          pseudoObject[methodName] = (function(prop, options, methodName) {
 
             function mixed() {
 
               // $wrapped is just one (or) the first argument,
               // so we pass to the first arguments;
-
               if (chain || !_.isEmpty(prop.prototype)) {
 
                 var args = [this];
@@ -123,58 +117,8 @@
     return object;
   }
 
-
-  function mixin_(object, source, options) {
-    var chain = true,
-      supe = false,
-      unchainMethods = [];
-    
-    if (options === false) {
-      chain = false;
-    } else if (_.isObject(options)) {
-      if ('chain' in options)
-        chain = options.chain;
-      if ('super' in options)
-        supe = true;
-      unchainMethods = options.unchain || unchainMethods;
-    }
-
-    for (var methodName in source) {
-      var prop = source[methodName];
-
-      // check if is a function
-      if (_.isFunction(prop)) {
-
-        object.prototype[methodName] = (function(prop, options, methodName) {
-          function mixed() {
-
-            if (chain && !_.contains(unchainMethods, methodName)) {
-              var args = [this];
-              Array.prototype.push.apply(args, arguments);
-
-              // in this mixin we just execute the method, and mantain the wrapped
-              prop.apply(this, args);
-
-              return this;
-            }
-
-            var args = [];
-            Array.prototype.push.apply(args, arguments);
-
-            return prop.apply(this, args);
-          }
-
-          return mixed;
-        }.call(object, prop, options, methodName));
-
-      }
-    }
-
-  }
-
   // Classy instance list
   var classyList = [];
-
   
   function ClassyBuilder(name, options, inherits, listeners) {
     options = options || {};
@@ -201,6 +145,7 @@
     var $pk = options.$pk || 'id';
     var unique = options.$unique || {};
     var current = null;
+    options.$hasMany = options.$hasMany || {};
     listeners = listeners || {};
 
     /////////////////////
@@ -232,7 +177,7 @@
       var test = false;
 
       _.each(data, function(d) {
-        _.each(unique, function(u, k) {
+        _.each(unique, function(elem, k) {
           if (_.isFunction(unique[k])) {
             test = unique[k].call(context, d[k], newData[k], d, newData);
           }
@@ -251,8 +196,6 @@
       var o = {};
       o[$pk] = v;
 
-      console.log(o);
-
       return o;
     }
 
@@ -270,7 +213,7 @@
 
       return _.isFinite(i) 
         ? data[i] 
-        : (_.isObject(i) ? _.find(data, pko(i.$id())) : data);
+        : (_.isObject(i) ? _.find(data, pko(i[$pk])) : data);
     }
 
     function $dispatch(listener) {
@@ -376,6 +319,24 @@
       return context;
     }
 
+    function $filter(o) {
+      return _.filter(data, o);
+    };
+
+    function $find(o) {
+      return _.find(data, o);
+    };
+
+    function $export() {
+      return _.map(data, function(d) {
+        return d.$value();
+      });
+    };
+
+    function $indexed(k) {
+      return k ? indexed[k] : indexed;
+    };
+
     structure.$data = $data;
     structure.$dispatch = $dispatch;
     structure.$constructor = $constructor;
@@ -386,6 +347,11 @@
     structure.$load = $load;
     structure.$removeAll = $removeAll;
     structure.$removeAt = $removeAt;
+    structure.$load = $load;
+    structure.$filter = $filter;
+    structure.$find = $find;
+    structure.$export = $export;
+    structure.$indexed = $indexed;
 
     // 2) wrapper manipulators
     var wrapper = {};
@@ -420,7 +386,7 @@
     }
 
     function $index(elem) {
-      return _.indexOf(data, elem);
+      return _.findIndex(data, pko(elem[$pk]));
     }
 
     function $order(elem) {
@@ -439,6 +405,67 @@
       return (k > -1) ? (data[k-1] ? data[k-1] : false) : false;
     }
 
+    function $change(a, b) {
+      var k;
+
+      _.each(b, function(c, k) {
+        if (!methods.$hasMany[k]) {
+          a[k] = c;
+          // a.$wrapped[k] = c;
+        }
+      });
+
+      dispatch.call(this, '$change', a, b);
+
+      return this;
+    }
+
+    function $set(elem, key, value) {
+      var oldValue;
+      if (_.isArray(key)) {
+        // TODO
+      } else if(_.isPlainObject(key)) {
+        $change(a, b);
+      } else {
+        oldValue = _.cloneDeep(elem[key]);
+
+        elem[key] = value;
+        // elem.$wrapped[key] = elem[key];
+      }
+
+      dispatch.call(this, '$set', elem, key, value, oldValue);
+
+      return this;
+    }
+
+    function $push(elem, key, value) {
+
+      if (_.isArray(elem[key])) {
+        elem[key].push(value);
+        // elem.$wrapped[key] = elem[key];
+      }
+
+      return this;
+    }
+
+    function $pull(elem, key, value) {
+      if (_.isArray(elem[key])) {
+        _.pull(elem[key], value);
+        // elem.$wrapped[key] = elem[key];
+      }
+
+      return this;
+    }
+
+    function $concat(elem, key, value) {
+      if (_.isArray(elem[key])) {
+        elem[key] = elem[key].concat(value);
+        // elem.$wrapped[key] = elem[key];
+      }
+
+      return this;
+    }
+
     wrapper.$add = $add;
     wrapper.$remove = $remove;
     wrapper.$current = $current;
@@ -446,9 +473,28 @@
     wrapper.$order = $order;
     wrapper.$next = $next;
     wrapper.$prev = $prev;
+    wrapper.$change = $change;
+    wrapper.$set = $set;
+    wrapper.$push = $push;
+    wrapper.$pull = $pull;
+    wrapper.$concat = $concat;
 
     // all wrapper methods can be chain as default
     var unchainMethods = ['$index', '$order', '$next', '$prev'];
+
+    var structureKeys = _.keys(structure);
+    var wrapperKeys = _.keys(wrapper);
+
+    // mix the inherits methods to each type
+    if (inherits) {
+      mixin(structure, _.pick(inherits, structureKeys), {chain: false, super: true, prototyped: false});
+      mixin(wrapper, _.pick(inherits, wrapperKeys), {chain: true, super: true, prototyped: false});
+    }
+
+    // inherits the rest (fresh methods)
+    if (inherits) {
+      mixin(context, _.omit(inherits, wrapperKeys.concat(structureKeys)), {chain: false, prototyped: false});
+    }
 
     // both methods are inserted in context
     _.assign(context, structure);
@@ -456,7 +502,7 @@
 
     // each element of (new Classy)() is a ClassyWrapper
     function ClassyWrapper(content) {
-      var defs = {};
+      var defs = options.$defaults || {};
 
       defs[$pk] = ID;
 
@@ -484,22 +530,39 @@
         return n;
       };
 
+      this.$isActive = function $isActive() {
+        return (this === this.constructor.$current());
+      };
+
+      this.$copy = function $copy() {
+        var v = this.$value();
+
+        // remove the $pk key
+        delete v[$pk];
+
+        return context(v);
+      };
+
       // rewrite some special methods (exceptions)
     }
+
+    context.constructor = ClassyWrapper;
 
     mixin(ClassyWrapper, wrapper, {chain: true, super: true, unchain: unchainMethods});
 
     return context;
   }
 
-  function classy(name, b, c, d) {
+  function classy(name, options, inherits, listeners) {
     if (!_.contains(classyList, name))
       classyList.push(name);
     else
       console.info("The class "+name+" already exist, may comflict with others.");
 
-    return new ClassyBuilder(name, b, c, d);
+    return ClassyBuilder(name, options, inherits, listeners);
   }
+
+  classy.mixin = mixin;
 
 
   if (exports.Classy) {
