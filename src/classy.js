@@ -386,6 +386,9 @@
     structure.$export = $export;
     structure.$indexed = $indexed;
 
+    // public variables
+    structure.$name = name;
+
     // 2) wrapper manipulators
     var wrapper = {};
 

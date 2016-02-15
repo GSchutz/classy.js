@@ -11,6 +11,11 @@ describe("Classy", function() {
     });
 
 
+    it("should have a property $name as defined", function() {
+      expect(MyClass.$name).toEqual('MyClass');
+    });
+
+
     describe("when Classy instance is instantiated", function() {
       it("should return a ClassyWrapper (MyClass Constructor)", function() {
         var myClassInstance = MyClass();
