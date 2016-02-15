@@ -21,10 +21,12 @@
   "homepage": "https://github.com/GSchutz/classy.js",
   "devDependencies": {
     "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
     "gulp-jasmine-browser": "^1.0.0",
-    "gulp-util": "^3.0.7",
+    "gulp-uglify": "^1.5.2",
     "gulp-watch": "^4.3.5",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "rimraf": "^2.5.2"
   },
   "dependencies": {}
 }
