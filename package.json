@@ -20,12 +20,11 @@
   },
   "homepage": "https://github.com/GSchutz/classy.js",
   "devDependencies": {
-    "babel-polyfill": "^6.5.0",
     "gulp": "^3.9.1",
     "gulp-jasmine-browser": "^1.0.0",
-    "gulp-util": "^3.0.7"
-  },
-  "dependencies": {
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "^4.3.5",
     "q": "^1.4.1"
-  }
+  },
+  "dependencies": {}
 }
