@@ -445,7 +445,7 @@
       var k;
 
       _.each(b, function(c, k) {
-        if (!methods.$hasMany[k]) {
+        if (!options.$hasMany[k]) {
           a[k] = c;
           // a.$wrapped[k] = c;
         }

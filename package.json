@@ -2,15 +2,16 @@
   "name": "classy.js",
   "version": "0.1.0",
   "description": "A general purpose class constructor for javascript",
-  "main": "index.js",
+  "main": "dist/classy.min.js",
   "directories": {
     "example": "example"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm install && bower install && npm test",
+    "test": "gulp"
   },
   "author": "Guilherme Schutz",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/GSchutz/classy.js"

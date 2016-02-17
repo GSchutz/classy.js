@@ -1,68 +1,78 @@
-function SuperClass() {
+////////////
+// README //
+////////////
 
-  this.go = function() {
-    console.log(this == User);
+/////////////////
+// Basic Usage //
+/////////////////
+
+var User = Classy('User', {
+  $defaults: {
+    name: ''
+  }
+});
+
+var john = User({name: 'John'});
+
+john.$add();
+// or User.$add(john);
+
+User.$data();
+// → [{name: 'John'}]
+
+john.$change('name', 'John Nash');
+// → {name: 'John Nash'}
+
+john.$remove();
+
+User.$data();
+// → []
+
+////////////
+// Classy //
+////////////
+
+function SuperClass() {
+  var private = "This is my SuperClass";
+
+  this.myOwnMethod = function() {
+    // do something
     return this;
   };
 
-  this.$add = function() {
-    // super is a self destructive method
-    console.log('using $super method');
-    return this.$super();
+  this.$add = function(data) {
+    // set a property as required
+    if (data.email) {
+      // ok, continue, run the original method
+      // the arguments will be already available
+      return this.$super();
+    } else {
+      throw new Error('The property email is required');
+    }
   };
 }
 
-var User = Classy('user', {
+var options = {
+  $pk: 'id',
   $defaults: {
-    name: "",
-    treta: "hight"
-  }
-}, new SuperClass());
+    name: "My Default Name"
+  },
+  $hasMany: {}
+}
 
-var lola = User({name: "lola", treta:"low"});
+var User = Classy( 'User', options, new SuperClass() );
 
-console.log(lola.$add());
+var john = User({});
 
-var kate = User({name: "kate"}).$add();
-var rose = User({name: "rose"}).$add();
+try {
+  john = john.$add();
+} catch (e) {
+  console.log(e.message);
+  // → "The property email is required"
+}
 
-console.log(rose);
+console.log(john);
+// → {name: "My Default Name", id: 1} 
 
-console.log(lola.$next());
-
-
-// 1) SuperClass
-// example of a super class that can control/rewrite original methods
-// function SuperClass() {
-//   this.$add = function(u) {
-//     if (u.name) {
-//       // use the $super method to execute the original method
-//     	this.$super(u);
-//     } else {
-//     	throw new TypeError('Property name is required for class User');
-//     }
-
-//     return this;
-//   };
-// }
-
-// var user = Classy('user', {
-//   test: function(el) {
-//     console.log(el);
-//     return this;
-//   }
-// }, new SuperClass());
-
-// window.user = user;
-
-// try {
-// 	var joao = user({name: 'joao'}).$add();
-	
-//   // user guilherme will not be added to $data
-// 	var guilherme = user({tr: 'guilherme'}).$add();
-
-// } catch (e) {
-// 	console.log(e);
-// }
-
-// Rewrite Classy
+console.log(User.$data());
+// → []
