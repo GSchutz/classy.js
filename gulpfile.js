@@ -29,9 +29,7 @@ gulp.task('dist', ['clean'], function(cb) {
     .on('end', cb);
 });
 
-gulp.task('default', ['jasmine']); //'watch'
-
-var server;
+gulp.task('default', ['jasmine', 'watch']);
 
 gulp.task('jasmine', ['dist'], function() {
   var jasmineBrowser = require('gulp-jasmine-browser');
@@ -39,13 +37,12 @@ gulp.task('jasmine', ['dist'], function() {
   gulp.src(SPECS)
     .pipe(watch(SPECS))
     .pipe(jasmineBrowser.specRunner())
-    .pipe(server = jasmineBrowser.server({port: 7007}));
+    .pipe(jasmineBrowser.server({port: 7007}));
 });
 
 gulp.task('watch', function() {
-  gulp.watch(SRC_JS, function() {
-    server.close(function () { 
-      gulp.start('jasmine');
-    });
-  });
+  var restart = require('gulp-restart');
+
+  // will restart the entire gulp
+  gulp.watch(SRC_JS, restart);
 });
