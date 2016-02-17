@@ -1,4 +1,5 @@
 describe("Classy", function() {
+  var MyClass;
 
   beforeAll(function() {
     MyClass = Classy('MyClass');
@@ -188,6 +189,31 @@ describe("Classy", function() {
       });
     });
 
+  });
+
+  
+  describe('When load data', function() {
+    var MyRelationalClass;
+
+    beforeAll(function() {
+      MyRelationalClass = Classy('MyRelationalClass', {
+        $hasMany: {
+          MyClass: MyClass
+        }
+      }, {
+
+      });
+    });
+
+    // it("should dispatch $add for each data entry", function() {
+
+    // });
+
+    it("should set all relationships", function() {
+      var something = MyRelationalClass({name: "Something"});
+
+      expect(something.MyClass instanceof Classy.constructor).toBeTruthy();
+    });
   });
 
 });

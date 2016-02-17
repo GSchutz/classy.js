@@ -199,10 +199,12 @@
 
     function applyHasMany(elem) {
       _.each(options.$hasMany, function(m, k) {
-        var nm = m.$constructor();
+        if (m && m.$constructor) {
+          var nm = m.$constructor();
 
-        nm.$load(elem[k]);
-        elem[k] = nm;
+          nm.$load(elem[k]);
+          elem[k] = nm;
+        }
       });
     }
 
@@ -338,6 +340,9 @@
     }
 
     function $load(_data) {
+      if (!data)
+        return context;
+
       $removeAll();
 
       if (_data && _data.$data)
@@ -354,24 +359,30 @@
 
     function $filter(o) {
       return _.filter(data, o);
-    };
+    }
 
     function $find(o) {
       return _.find(data, o);
-    };
+    }
 
     function $export() {
       return _.map(data, function(d) {
         return d.$value();
       });
-    };
+    }
 
     function $indexed(k) {
       return k ? indexed[k] : indexed;
-    };
+    }
+
+    function $each(fn) {
+      _.each(data, fn, this);
+      return this;
+    }
 
     structure.$data = $data;
     structure.$dispatch = $dispatch;
+    structure.$on = $on;
     structure.$constructor = $constructor;
     structure.$first = $first;
     structure.$last = $last;
@@ -380,11 +391,11 @@
     structure.$load = $load;
     structure.$removeAll = $removeAll;
     structure.$removeAt = $removeAt;
-    structure.$load = $load;
     structure.$filter = $filter;
     structure.$find = $find;
     structure.$export = $export;
     structure.$indexed = $indexed;
+    structure.$each = $each;
 
     // public variables
     structure.$name = name;
@@ -400,8 +411,6 @@
 
       data.push(elem);
       indexed[elem[$pk]] = elem;
-
-      applyHasMany(elem);
 
       if (!silent)
         dispatch.call(context, '$add', elem);
@@ -547,6 +556,9 @@
       // set the defaults for the Object
       _.assign(this, content);
 
+      // apply relationships
+      applyHasMany(this);
+
       this.$id = function $id() {
         return this[$pk];
       };
@@ -592,8 +604,8 @@
   function classy(name, options, inherits, listeners) {
     if (!_.contains(classyList, name))
       classyList.push(name);
-    else
-      console.info("The class "+name+" already exist, may comflict with others.");
+    // else
+      // console.info("The class "+name+" already exist, may comflict with others.");
 
     return ClassyBuilder(name, options, inherits, listeners);
   }
