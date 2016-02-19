@@ -175,6 +175,7 @@
 
     var data = [];
     var indexed = {};
+    var reserved = ['$defaults', '$unique', '$hasMany', '$belongsTo', '$pk'];
     var $pk = options.$pk || 'id';
     var unique = options.$unique || {};
     var current = null;
@@ -399,6 +400,7 @@
 
     // public variables
     structure.$name = name;
+    structure.$pk = $pk;
 
     // 2) wrapper manipulators
     var wrapper = {};
@@ -523,6 +525,9 @@
     wrapper.$push = $push;
     wrapper.$pull = $pull;
     wrapper.$concat = $concat;
+
+    // apply methods inside options
+    _.assign(wrapper, _.omit(options, reserved));
 
     // all wrapper methods can be chain as default
     var unchainMethods = ['$index', '$order', '$next', '$prev'];
