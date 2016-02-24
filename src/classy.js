@@ -179,6 +179,7 @@
     var $pk = options.$pk || 'id';
     var unique = options.$unique || {};
     var current = null;
+    var extensions = [];
     options.$hasMany = options.$hasMany || {};
     listeners = listeners || {};
 
@@ -274,7 +275,14 @@
     }
 
     function $constructor(n) {
-      return classy(n || name, options, inherits, listeners);
+      var cl = classy(n || name, options, inherits, listeners);
+
+      // apply $extensions
+      _.each(extensions, function(ext) {
+        cl.$extend(ext.extension, ext.mixed);
+      });
+
+      return cl;
     }
       
     function $current(c) {
@@ -381,6 +389,21 @@
       return this;
     }
 
+    function $extend( extension, mixed ) {
+      if (_.isFunction(extension)) {
+        extension = new extension();
+      }
+
+      mixed = _.defaults({chain: false, super: true, prototyped: false}, mixed);
+
+      mixin(this, extension, mixed);
+
+      // save this for $constructor
+      extensions.push({extension: extension, mixed: mixed});
+
+      return this;
+    }
+
     structure.$data = $data;
     structure.$dispatch = $dispatch;
     structure.$on = $on;
@@ -397,6 +420,7 @@
     structure.$export = $export;
     structure.$indexed = $indexed;
     structure.$each = $each;
+    structure.$extend = $extend;
 
     // public variables
     structure.$name = name;

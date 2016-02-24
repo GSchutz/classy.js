@@ -216,4 +216,31 @@ describe("Classy", function() {
     });
   });
 
+
+  describe('When someObject extend a Classy instance', function() {
+
+    var MyClass = Classy('MyClass');
+
+    MyClass.$extend({
+      myMethod: function() {
+        console.log(this.$name);
+
+        return this.$name;
+      }
+    });
+
+    it("should have someObject methods acessible by the instance", function() {
+      var instance = MyClass({name: "extended"});
+
+      expect(MyClass.myMethod()).toEqual("MyClass");
+      expect(MyClass.myMethod()).toEqual("MyClass");
+    });
+
+    it("should have someObject methods acessible by the $constructor", function() {
+      var another = MyClass.$constructor("NewMyClass");
+
+      expect(another.myMethod()).toEqual("NewMyClass");
+    });
+  });
+
 });
