@@ -587,11 +587,12 @@
         return (this === this.constructor.$current());
       };
 
-      this.$copy = function $copy() {
+      this.$copy = function $copy(keepKey) {
         var v = this.$value();
 
         // remove the $pk key
-        delete v[$pk];
+        if (!keepKey)
+          delete v[$pk];
 
         return context(v);
       };
