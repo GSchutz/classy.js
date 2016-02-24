@@ -1,4 +1,5 @@
 describe("Classy", function() {
+  var MyClass;
 
   beforeAll(function() {
     MyClass = Classy('MyClass');
@@ -188,6 +189,58 @@ describe("Classy", function() {
       });
     });
 
+  });
+
+  
+  describe('When load data', function() {
+    var MyRelationalClass;
+
+    beforeAll(function() {
+      MyRelationalClass = Classy('MyRelationalClass', {
+        $hasMany: {
+          MyClass: MyClass
+        }
+      }, {
+
+      });
+    });
+
+    // it("should dispatch $add for each data entry", function() {
+
+    // });
+
+    it("should set all relationships", function() {
+      var something = MyRelationalClass({name: "Something"});
+
+      expect(something.MyClass instanceof Classy.constructor).toBeTruthy();
+    });
+  });
+
+
+  describe('When someObject extend a Classy instance', function() {
+
+    var MyClass = Classy('MyClass');
+
+    MyClass.$extend({
+      myMethod: function() {
+        console.log(this.$name);
+
+        return this.$name;
+      }
+    });
+
+    it("should have someObject methods acessible by the instance", function() {
+      var instance = MyClass({name: "extended"});
+
+      expect(MyClass.myMethod()).toEqual("MyClass");
+      expect(MyClass.myMethod()).toEqual("MyClass");
+    });
+
+    it("should have someObject methods acessible by the $constructor", function() {
+      var another = MyClass.$constructor("NewMyClass");
+
+      expect(another.myMethod()).toEqual("NewMyClass");
+    });
   });
 
 });

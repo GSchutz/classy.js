@@ -175,9 +175,11 @@
 
     var data = [];
     var indexed = {};
+    var reserved = ['$defaults', '$unique', '$hasMany', '$belongsTo', '$pk'];
     var $pk = options.$pk || 'id';
     var unique = options.$unique || {};
     var current = null;
+    var extensions = [];
     options.$hasMany = options.$hasMany || {};
     listeners = listeners || {};
 
@@ -199,10 +201,12 @@
 
     function applyHasMany(elem) {
       _.each(options.$hasMany, function(m, k) {
-        var nm = m.$constructor();
+        if (m && m.$constructor) {
+          var nm = m.$constructor();
 
-        nm.$load(elem[k]);
-        elem[k] = nm;
+          nm.$load(elem[k]);
+          elem[k] = nm;
+        }
       });
     }
 
@@ -271,7 +275,14 @@
     }
 
     function $constructor(n) {
-      return classy(n || name, options, inherits, listeners);
+      var cl = classy(n || name, options, inherits, listeners);
+
+      // apply $extensions
+      _.each(extensions, function(ext) {
+        cl.$extend(ext.extension, ext.mixed);
+      });
+
+      return cl;
     }
       
     function $current(c) {
@@ -338,6 +349,9 @@
     }
 
     function $load(_data) {
+      if (!data)
+        return context;
+
       $removeAll();
 
       if (_data && _data.$data)
@@ -354,24 +368,45 @@
 
     function $filter(o) {
       return _.filter(data, o);
-    };
+    }
 
     function $find(o) {
       return _.find(data, o);
-    };
+    }
 
     function $export() {
       return _.map(data, function(d) {
         return d.$value();
       });
-    };
+    }
 
     function $indexed(k) {
       return k ? indexed[k] : indexed;
-    };
+    }
+
+    function $each(fn) {
+      _.each(data, fn, this);
+      return this;
+    }
+
+    function $extend( extension, mixed ) {
+      if (_.isFunction(extension)) {
+        extension = new extension();
+      }
+
+      mixed = _.defaults({chain: false, super: true, prototyped: false}, mixed);
+
+      mixin(this, extension, mixed);
+
+      // save this for $constructor
+      extensions.push({extension: extension, mixed: mixed});
+
+      return this;
+    }
 
     structure.$data = $data;
     structure.$dispatch = $dispatch;
+    structure.$on = $on;
     structure.$constructor = $constructor;
     structure.$first = $first;
     structure.$last = $last;
@@ -380,14 +415,16 @@
     structure.$load = $load;
     structure.$removeAll = $removeAll;
     structure.$removeAt = $removeAt;
-    structure.$load = $load;
     structure.$filter = $filter;
     structure.$find = $find;
     structure.$export = $export;
     structure.$indexed = $indexed;
+    structure.$each = $each;
+    structure.$extend = $extend;
 
     // public variables
     structure.$name = name;
+    structure.$pk = $pk;
 
     // 2) wrapper manipulators
     var wrapper = {};
@@ -400,8 +437,6 @@
 
       data.push(elem);
       indexed[elem[$pk]] = elem;
-
-      applyHasMany(elem);
 
       if (!silent)
         dispatch.call(context, '$add', elem);
@@ -515,6 +550,9 @@
     wrapper.$pull = $pull;
     wrapper.$concat = $concat;
 
+    // apply methods inside options
+    _.assign(wrapper, _.omit(options, reserved));
+
     // all wrapper methods can be chain as default
     var unchainMethods = ['$index', '$order', '$next', '$prev'];
 
@@ -547,6 +585,9 @@
       // set the defaults for the Object
       _.assign(this, content);
 
+      // apply relationships
+      applyHasMany(this);
+
       this.$id = function $id() {
         return this[$pk];
       };
@@ -570,11 +611,12 @@
         return (this === this.constructor.$current());
       };
 
-      this.$copy = function $copy() {
+      this.$copy = function $copy(keepKey) {
         var v = this.$value();
 
         // remove the $pk key
-        delete v[$pk];
+        if (!keepKey)
+          delete v[$pk];
 
         return context(v);
       };
@@ -592,8 +634,8 @@
   function classy(name, options, inherits, listeners) {
     if (!_.contains(classyList, name))
       classyList.push(name);
-    else
-      console.info("The class "+name+" already exist, may comflict with others.");
+    // else
+      // console.info("The class "+name+" already exist, may comflict with others.");
 
     return ClassyBuilder(name, options, inherits, listeners);
   }
