@@ -202,6 +202,20 @@
     function applyHasMany(elem) {
       _.each(options.$hasMany, function(m, k) {
         if (m && m.$constructor) {
+          var belongs = {};
+          belongs[name] = elem;
+
+          var nm = m.$constructor(name, belongs);
+
+          nm.$load(elem[k]);
+          elem[k] = nm;
+        }
+      });
+    }
+
+    function applyBelongsTo(elem) {
+      _.each(options.$hasMany, function(m, k) {
+        if (m && m.$constructor) {
           var nm = m.$constructor();
 
           nm.$load(elem[k]);
@@ -585,8 +599,14 @@
       // set the defaults for the Object
       _.assign(this, content);
 
+      // we have a belongsTo of structure and for the wrapper
+      // one point to a resource, the other points to Classy
+      this.$belongsTo = {};
+
       // apply relationships
       applyHasMany(this);
+
+      // so now we can do this[relationship]
 
       this.$id = function $id() {
         return this[$pk];

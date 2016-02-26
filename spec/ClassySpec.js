@@ -209,11 +209,24 @@ describe("Classy", function() {
 
     // });
 
-    it("should set all relationships", function() {
+    it("should set all hasMany relationships", function() {
       var something = MyRelationalClass({name: "Something"});
 
       expect(something.MyClass instanceof Classy.constructor).toBeTruthy();
     });
+
+
+    // it("should set belongsTo on all hasMany relationships", function() {
+    //   var something = MyRelationalClass({name: "Something"});
+
+    //   var someinstance = something.MyClass({teste: 1}).$add();
+
+
+    //   console.log(someinstance.$belongsTo, MyClass.$belongsTo);
+
+    //   // so we can access the relationship father
+    //   expect(someinstance.$belongsTo.MyRelationalClass).toEqual(something);
+    // });
   });
 
 
