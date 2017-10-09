@@ -132,6 +132,7 @@
       original_name = name;
 
     methods = methods || {};
+    var required = {};
 
     _.defaults(methods, {
       $hasMany: {}
@@ -310,6 +311,18 @@
       this.$constructor = function() {
         return Class(name, methods, inherits, listeners);
       };
+
+      this.$required = function(obj) {
+        if (_.isPlainObject(obj)) {
+          required = required;
+        } else {
+          for(i in obj) {
+            obj[i] = 1;
+          }
+        }
+
+        return this;
+      };
       
       this.$current = function (c) {
         if (!_.isUndefined(c)) {
@@ -365,9 +378,25 @@
         });
       }
 
+      function validate(obj) {
+        var valid = true;
+
+        _.each(required, function(field, isRequired) {
+          if (isRequired && _.isEmpty(obj[field])) {
+            valid = false;
+            return true;
+          }
+        });
+
+        return true;
+      }
+
       this.$add = function(u, silent) {
         if (alreadyExist(u))
           throw new Error('Unique constraint failed');
+
+        if (!validate(u))
+          throw new Error('Validation failed for required fields');
 
         u = constructor(u);
 
