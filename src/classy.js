@@ -179,6 +179,7 @@
     var $pk = options.$pk || 'id';
     var unique = options.$unique || {};
     var current = null;
+    var required = {};
     var extensions = [];
     options.$hasMany = options.$hasMany || {};
     listeners = listeners || {};
@@ -298,6 +299,17 @@
 
       return cl;
     }
+
+    function $required(obj) {
+      if (_.isPlainObject(obj)) {
+        required = obj;
+      } else {
+        _.each(obj, function(o) {
+          required[o] = 1;
+        });
+      }
+      return this;
+    };
       
     function $current(c) {
       if (!_.isUndefined(c)) {
@@ -422,6 +434,7 @@
     structure.$dispatch = $dispatch;
     structure.$on = $on;
     structure.$constructor = $constructor;
+    structure.$required = $required;
     structure.$first = $first;
     structure.$last = $last;
     structure.$goNext = $goNext;
@@ -443,9 +456,25 @@
     // 2) wrapper manipulators
     var wrapper = {};
 
+    function validate(obj) {
+      var valid = true;
+
+      _.each(required, function(field, isRequired) {
+        if (isRequired && _.isEmpty(obj[field])) {
+          valid = false;
+          return true;
+        }
+      });
+
+      return true;
+    }
+
     function $add(elem, silent) {
       if (alreadyExist(elem))
         throw new Error('Unique constraint failed for Classy ' + name);
+
+      if (!validate(elem))
+        throw new Error('Validation failed for required fields');
 
       elem = context(elem);
 
