@@ -150,6 +150,13 @@
     return object;
   }
 
+  function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
   // Classy instance list
   var classyList = [];
   
@@ -619,9 +626,11 @@
 
     // each element of (new Classy)() is a ClassyWrapper
     function ClassyWrapper(content) {
+      content = content || {};
       var defs = options.$defaults || {};
 
-      defs[$pk] = ID;
+      // use random id -> UUID
+      defs[$pk] = uuidv4();
 
       _.defaults(content, defs);
 
